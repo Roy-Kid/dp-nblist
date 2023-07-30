@@ -40,7 +40,7 @@
 //         particle_xyz[2] = inputs[tid + 2 * num_particles];
 
 //         int particle_ind = particle_inds[tid];
-//         // ... (继续核函数中的逻辑)
+//         // 继续原有逻辑
 //     }
 // }
 
@@ -225,14 +225,14 @@ public:
     }
 
     double rc;                                  // the cut-off radius
-    int num_particles;                          // 系统中的颗粒数量
-    int num_cells;                              // 系统中的cell数量
+    int num_particles;                          // the number of particles
+    int num_cells;                              // the number of cells
 
-    thrust::device_vector<double> cube_size;     // cube domain的大小
-    thrust::device_vector<int> lc;              // 离散化后的cell尺寸
-    thrust::device_vector<double> grid_size;    // cell的尺寸
+    thrust::device_vector<double> cube_size;     // cube domain
+    thrust::device_vector<int> lc;              // cell size
+    thrust::device_vector<double> grid_size;    // grid size
 
-    Dynamic2DArray<int> particle_list; // 使用 Dynamic2DArray 表示 particle_list和cell_list
+    Dynamic2DArray<int> particle_list; // Dynamic2DArray represents particle_list and cell_list
     Dynamic2DArray<int> cell_list; 
 
     // const int num_blocks = 12;
@@ -287,7 +287,7 @@ PYBIND11_MODULE(grid_based_nbl_cpp, m) {
 
 
 int main() {
-    // 测试 xyz - index转换
+    // test xyz - index转换
     thrust::host_vector<double> c_size(3);
     for (int i = 0; i < 3; i++) {
         c_size[i] = 10.0; 
@@ -296,10 +296,10 @@ int main() {
     int num_particles = 3;
     double cut_off_radius = 1.0;
 
-    // Call GB_NBL_GPU_cube constructor with thrust::device_vector
+    // call GB_NBL_GPU_cube constructor with thrust::device_vector
     GB_NBL_GPU_cube lc_cube(c_size, num_particles, cut_off_radius);
 
-    // Convert xyz to thrust::device_vector of Dynamic2DArray
+    // convert xyz to thrust::device_vector of Dynamic2DArray
     std::vector<std::vector<double>> xyz_temp = { {1.5, 2.2, 3.7}, {4.1, 5.9, 6.3}, {7.8, 8.4, 9.2} };
     Dynamic2DArray<double> xyz(3, 3);
     for (int i = 0; i < 3; i++) {
@@ -308,7 +308,7 @@ int main() {
         }
     }
 
-    // Call the GPU wrapper functions to perform computations on the GPU
+    // call the GPU wrapper functions to perform computations on the GPU
     thrust::device_vector<int> cell_indices = lc_cube.xyz2ind_gpu(xyz);
     thrust::host_vector<int> host_cell_indices = cell_indices;
     std::cout << "Cell indices:" << std::endl;
@@ -318,7 +318,7 @@ int main() {
     std::cout << std::endl;
 
 
-    // Call the GPU wrapper function for ind2xyz_gpu
+    // call the GPU wrapper function for ind2xyz_gpu
     std::cout << "Restore: " << std::endl;
     Dynamic2DArray<double> device_restored_xyz = lc_cube.ind2xyz_gpu(cell_indices);
     device_restored_xyz.print();
@@ -328,7 +328,7 @@ int main() {
     }
     std::cout << "sighn" << std::endl;
 
-    // Check the distance calculation
+    // check the distance calculation
     std::vector<double> cube_size2 = { 20, 20, 20 };
     thrust::device_vector<double> cube_size2_dev(3);
     for(int i = 0; i < 3; i++) {
@@ -357,7 +357,7 @@ int main() {
     
 
 
-    // Check get_neighbor_cells_gpu
+    // check get_neighbor_cells_gpu
     thrust::host_vector<double> c_size(3);
     for (int i = 0; i < 3; i++) {
         c_size[i] = 80.0; 
@@ -366,7 +366,7 @@ int main() {
     int num_particles = 5000;
     double cut_off_radius = 2.0;
 
-    // Call GB_NBL_GPU_cube constructor with thrust::device_vector
+    // call GB_NBL_GPU_cube constructor with thrust::device_vector
     GB_NBL_GPU_cube lc_cube3(c_size, num_particles, cut_off_radius);
 
     // thrust::device_vector res = lc_cube3.get_neighbor_cells_gpu(1);
@@ -374,7 +374,7 @@ int main() {
     //     std::cout << res[i] << " ";
     // }
 
-    // Check the constructor
+    // check the constructor
     std::vector<std::vector<double>> xyz_temp;
     for (int i = 0; i < num_particles; i++) {
         double x = generate_random_double(0.0, 80.0);
@@ -383,7 +383,7 @@ int main() {
         xyz_temp.push_back({x, y, z});
     }
 
-    // 将 xyz_temp 中的坐标导入到 Dynamic2DArray<double> xyz 中
+    // put xyz_temp into Dynamic2DArray<double> xyz 
     Dynamic2DArray<double> xyz(num_particles, 3);
     for (int i = 0; i < num_particles; i++) {
         for (int j = 0; j < 3; j++) {
@@ -393,20 +393,20 @@ int main() {
 
     std::cout << "Data Preparation Ready!" << std::endl;
 
-    // 统计时间：开始
+    // start time
     auto start_time = std::chrono::high_resolution_clock::now();
-    // 执行命令
+
     lc_cube3.constructor_gpu(xyz);
-    // 统计时间：结束
+    // end time
     auto end_time = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> duration = end_time - start_time;
-    // 输出执行时间（以秒为单位）
-    std::cout << "执行时间：" << duration.count() << " 秒" << std::endl;
+
+    std::cout << "Time: " << duration.count() << " s" << std::endl;
 
 
 
 
-    // 测试get_neighbors
+    // test get_neighbors
     thrust::device_vector res_neighbor = lc_cube3.get_neighbors(0);
     for (int i = 0; i < res_neighbor.size(); i++){
         std::cout << res_neighbor[i] << " ";
