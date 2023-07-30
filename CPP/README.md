@@ -5,10 +5,15 @@ This repository contains two implementations of neighbor list algorithms based o
 The repository consists of the following files:
 
 __50000.pdb__: The dataset for testing of 50000 moleculars. 
+
 __grid_based_nbl_cpp.cpp__: Unoptimized neighborlist implementation based on grid-based design.
-__grid_based_nbl_cpp.so__: The compiled library of Unoptimized neighborlist for python
+
+__grid_based_nbl_cpp.so__: The compiled library of Unoptimized neighborlist for python. 
+
 __grid_based_nbl_mp.cpp__: Neighborlist implementation with basic OpenMP optimization for improved performance.
-__grid_based_nbl_mp.so__: The compiled library of OpenMP neighborlistfor python
+
+__grid_based_nbl_mp.so__: The compiled library of OpenMP neighborlistfor python.
+
 __validation.py__: A test file comparing the performance of the implemented neighbor list algorithms with ASAP3 on a dataset of size 50000.
 
 

@@ -2,9 +2,12 @@
 This repository contains the implementation of a grid-based neighborlist algorithms based on CUDA with Thrust library. This method is tested with random number with C++.  
 # Files
 The repository consists of the following files:
+
 __0.100.pdb__: The dataset for validation, consisting of 800 moleculars. 
+
 __grid_based_nbl_gpu.cu__: The implementation of a grid-based neighborlist based on CUDA with Thrust library. 
-__tools.cuh__: A CUDA head file for tools used in __grid_based_nbl_gpu.cu__
+
+__tools.cuh__: A CUDA head file for tools used in __grid_based_nbl_gpu.cu__.
 
 
 
