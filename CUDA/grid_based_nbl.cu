@@ -168,11 +168,11 @@ public:
         // Step 1: Convert xyz to cell indices using CUDA (GPU)
         thrust::device_vector<int> particle_inds = xyz2ind_gpu(inputs);
 
-        // // Step 2: Add particles to corresponding cells
-        // for (int i = 0; i < num_particles; i++) {
-        //     cell_list.push_back(particle_inds[i], i);
-        //     // std::cout << "temp" << particle_inds[i] << " " << i << std::endl;
-        // }
+        // Step 2: Add particles to corresponding cells
+        for (int i = 0; i < num_particles; i++) {
+            cell_list.push_back(particle_inds[i], i);
+            // std::cout << "temp" << particle_inds[i] << " " << i << std::endl;
+        }
 
         // // Step 2: Add particles to corresponding cells
         // thrust::device_vector<int> device_cell_list(num_cells, -1);
@@ -180,34 +180,34 @@ public:
         //                                                        cell_list,
         //                                                        num_particles);
 
-        // // Step 3: Build neighbor relationships considering rc
-        // for (int particle_seq = 0; particle_seq < num_particles; particle_seq++) {
-        //     thrust::device_vector<double> particle_xyz = inputs.getVector(particle_seq);
+        // Step 3: Build neighbor relationships considering rc
+        for (int particle_seq = 0; particle_seq < num_particles; particle_seq++) {
+            thrust::device_vector<double> particle_xyz = inputs.getVector(particle_seq);
 
-        //     // int particle_ind = particle_inds[particle_seq];
-        //     // thrust::device_vector<int> adjacent_cells = get_neighbor_cells_gpu(particle_ind);
+            int particle_ind = particle_inds[particle_seq];
+            thrust::device_vector<int> adjacent_cells = get_neighbor_cells_gpu(particle_ind);
 
-        //     // for (int i = 0; i < adjacent_cells.size(); i++) {
-        //     //     thrust::device_vector<int> neighbor_particles_temp = cell_list.getVector(adjacent_cells[i]);
-        //     //     if (neighbor_particles_temp.size()) {
-        //     //         for (int j = 0; j < neighbor_particles_temp.size(); j++) {
-        //     //             int neighbor_particle_seq = neighbor_particles_temp[j];
-        //     //             if (neighbor_particle_seq == particle_seq) continue;
-        //     //             thrust::device_vector<double> neighbor_xyz = inputs.getVector(neighbor_particle_seq);
-        //     //             thrust::device_vector<double> diff = get_min_diff_gpu(particle_xyz, neighbor_xyz);
+            for (int i = 0; i < adjacent_cells.size(); i++) {
+                thrust::device_vector<int> neighbor_particles_temp = cell_list.getVector(adjacent_cells[i]);
+                if (neighbor_particles_temp.size()) {
+                    for (int j = 0; j < neighbor_particles_temp.size(); j++) {
+                        int neighbor_particle_seq = neighbor_particles_temp[j];
+                        if (neighbor_particle_seq == particle_seq) continue;
+                        thrust::device_vector<double> neighbor_xyz = inputs.getVector(neighbor_particle_seq);
+                        thrust::device_vector<double> diff = get_min_diff_gpu(particle_xyz, neighbor_xyz);
 
-        //     //             double distance = 0;
-        //     //             for (int k = 0; k < 3; k++) {
-        //     //                 distance += diff[i] * diff[i];
-        //     //             }
+                        double distance = 0;
+                        for (int k = 0; k < 3; k++) {
+                            distance += diff[i] * diff[i];
+                        }
 
-        //     //             if (distance - rc * rc < 1e-10) {
-        //     //                 particle_list.push_back(particle_seq, neighbor_particle_seq);
-        //     //             }
-        //     //         }
-        //     //     }
-        //     // }
-        // }
+                        if (distance - rc * rc < 1e-10) {
+                            particle_list.push_back(particle_seq, neighbor_particle_seq);
+                        }
+                    }
+                }
+            }
+        }
         // // Step 3: Build neighbor relationships considering rc
         // thrust::device_vector<int> device_particle_list(num_particles, -1);
         // build_neighbor_relationships_gpu<<<num_blocks, block_size>>>(inputs.data().get(),
