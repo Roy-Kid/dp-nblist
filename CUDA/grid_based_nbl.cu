@@ -248,40 +248,40 @@ double generate_random_double(double min_val, double max_val) {
 }
 
 
-// // 绑定 Dynamic2DArray 类模板到 Python
-// template <typename T>
-// void bind_Dynamic2DArray(py::module& m, const std::string& name) {
-//     // 定义中间函数来明确模板类型
-//     auto class_fn = [](py::module& m, const std::string& name) {
-//         return py::class_<Dynamic2DArray<T>>(m, name)
-//             .def(py::init<>())
-//             .def(py::init<int, int>())
-//             .def("push_back", &Dynamic2DArray<T>::push_back)
-//             .def("getElement", &Dynamic2DArray<T>::getElement)
-//             .def("getVector", &Dynamic2DArray<T>::getVector)
-//             .def("resize", &Dynamic2DArray<T>::resize)
-//             .def("print", (void (Dynamic2DArray<T>::*)()) &Dynamic2DArray<T>::print)
-//             .def("print", (void (Dynamic2DArray<T>::*)(int)) &Dynamic2DArray<T>::print);
-//     };
+// 绑定 Dynamic2DArray 类模板到 Python
+template <typename T>
+void bind_Dynamic2DArray(py::module& m, const std::string& name) {
+    // 定义中间函数来明确模板类型
+    auto class_fn = [](py::module& m, const std::string& name) {
+        return py::class_<Dynamic2DArray<T>>(m, name)
+            .def(py::init<>())
+            .def(py::init<int, int>())
+            .def("push_back", &Dynamic2DArray<T>::push_back)
+            .def("getElement", &Dynamic2DArray<T>::getElement)
+            .def("getVector", &Dynamic2DArray<T>::getVector)
+            .def("resize", &Dynamic2DArray<T>::resize)
+            .def("print", (void (Dynamic2DArray<T>::*)()) &Dynamic2DArray<T>::print)
+            .def("print", (void (Dynamic2DArray<T>::*)(int)) &Dynamic2DArray<T>::print);
+    };
 
-//     // 调用中间函数
-//     class_fn(m, name);
-// }
+    // 调用中间函数
+    class_fn(m, name);
+}
 
-// PYBIND11_MODULE(grid_based_nbl_cpp, m) {
-//     // // Dynamic2DArray类模板的Pybind11绑定
-//     // bind_Dynamic2DArray<double>(m, "Dynamic2DArrayDouble");
-//     // bind_Dynamic2DArray<int>(m, "Dynamic2DArrayInt");
+PYBIND11_MODULE(grid_based_nbl_cpp, m) {
+    // // Dynamic2DArray类模板的Pybind11绑定
+    // bind_Dynamic2DArray<double>(m, "Dynamic2DArrayDouble");
+    // bind_Dynamic2DArray<int>(m, "Dynamic2DArrayInt");
 
-//     // // 辅助函数vector2set_int的Pybind11绑定
-//     // m.def("vector2set_int", &vector2set_int, "Convert a vector to a set (remove duplicates) using Thrust.");
+    // // 辅助函数vector2set_int的Pybind11绑定
+    // m.def("vector2set_int", &vector2set_int, "Convert a vector to a set (remove duplicates) using Thrust.");
 
-//     // GB_NBL_GPU_cube类的Pybind11绑定
-//     py::class_<GB_NBL_GPU_cube>(m, "GB_NBL_GPU_cube")
-//         .def(py::init<const thrust::host_vector<double>&, int, double>())
-//         .def("constructor_gpu_wrapper", &GB_NBL_GPU_cube::constructor_gpu)
-//         .def("get_neighbors", &GB_NBL_GPU_cube::get_neighbors, py::arg("particle_seq"));
-// }
+    // GB_NBL_GPU_cube类的Pybind11绑定
+    py::class_<GB_NBL_GPU_cube>(m, "GB_NBL_GPU_cube")
+        .def(py::init<const thrust::host_vector<double>&, int, double>())
+        .def("constructor_gpu_wrapper", &GB_NBL_GPU_cube::constructor_gpu)
+        .def("get_neighbors", &GB_NBL_GPU_cube::get_neighbors, py::arg("particle_seq"));
+}
 
 
 
@@ -296,8 +296,8 @@ int main() {
     int num_particles = 3;
     double cut_off_radius = 1.0;
 
-    // Call GB_NBL_cube constructor with thrust::device_vector
-    GB_NBL_cube lc_cube(c_size, num_particles, cut_off_radius);
+    // Call GB_NBL_GPU_cube constructor with thrust::device_vector
+    GB_NBL_GPU_cube lc_cube(c_size, num_particles, cut_off_radius);
 
     // Convert xyz to thrust::device_vector of Dynamic2DArray
     std::vector<std::vector<double>> xyz_temp = { {1.5, 2.2, 3.7}, {4.1, 5.9, 6.3}, {7.8, 8.4, 9.2} };
@@ -328,92 +328,92 @@ int main() {
     }
     std::cout << "sighn" << std::endl;
 
-    // // Check the distance calculation
-    // std::vector<double> cube_size2 = { 20, 20, 20 };
-    // thrust::device_vector<double> cube_size2_dev(3);
-    // for(int i = 0; i < 3; i++) {
-    //     cube_size2_dev[i] = cube_size2[i];
-    // }
+    // Check the distance calculation
+    std::vector<double> cube_size2 = { 20, 20, 20 };
+    thrust::device_vector<double> cube_size2_dev(3);
+    for(int i = 0; i < 3; i++) {
+        cube_size2_dev[i] = cube_size2[i];
+    }
 
-    // int num_particles2 = 800;
-    // double cut_off_radius2 = 2.0;
-    // GB_NBL_cube lc_cube2(cube_size2, num_particles2, cut_off_radius2);
+    int num_particles2 = 800;
+    double cut_off_radius2 = 2.0;
+    GB_NBL_GPU_cube lc_cube2(cube_size2, num_particles2, cut_off_radius2);
 
-    // std::vector<double> p1 = {19.608,  7.38 ,  6.096}; 
-    // thrust::device_vector<double> p1_dev(3);
-    // for(int i = 0; i < 3; i++) {
-    //     p1_dev[i] = p1[i];
-    // }
+    std::vector<double> p1 = {19.608,  7.38 ,  6.096}; 
+    thrust::device_vector<double> p1_dev(3);
+    for(int i = 0; i < 3; i++) {
+        p1_dev[i] = p1[i];
+    }
 
-    // std::vector<double> p2 = {0.   , 9.012, 6.944};
-    // thrust::device_vector<double> p2_dev(3);
-    // for(int i = 0; i < 3; i++) {
-    //     p2_dev[i] = p2[i];
-    // }
+    std::vector<double> p2 = {0.   , 9.012, 6.944};
+    thrust::device_vector<double> p2_dev(3);
+    for(int i = 0; i < 3; i++) {
+        p2_dev[i] = p2[i];
+    }
 
-    // thrust::device_vector<double> res = lc_cube2.get_min_diff_gpu(p1, p2);
-    // std::cout << "Real value: [" << 0.392 << " " << 1.632 << " " << 0.848 << "]" << std::endl;
-    // std::cout << "Calculated value: [" << res[0] << " " << res[1] << "" << res[2] << "]" << std::endl;
+    thrust::device_vector<double> res = lc_cube2.get_min_diff_gpu(p1, p2);
+    std::cout << "Real value: [" << 0.392 << " " << 1.632 << " " << 0.848 << "]" << std::endl;
+    std::cout << "Calculated value: [" << res[0] << " " << res[1] << "" << res[2] << "]" << std::endl;
     
 
 
-    // // Check get_neighbor_cells_gpu
-    // thrust::host_vector<double> c_size(3);
-    // for (int i = 0; i < 3; i++) {
-    //     c_size[i] = 80.0; 
+    // Check get_neighbor_cells_gpu
+    thrust::host_vector<double> c_size(3);
+    for (int i = 0; i < 3; i++) {
+        c_size[i] = 80.0; 
+    }
+
+    int num_particles = 5000;
+    double cut_off_radius = 2.0;
+
+    // Call GB_NBL_GPU_cube constructor with thrust::device_vector
+    GB_NBL_GPU_cube lc_cube3(c_size, num_particles, cut_off_radius);
+
+    // thrust::device_vector res = lc_cube3.get_neighbor_cells_gpu(1);
+    // for(int i = 0; i < res.size(); i++) {
+    //     std::cout << res[i] << " ";
     // }
 
-    // int num_particles = 5000;
-    // double cut_off_radius = 2.0;
+    // Check the constructor
+    std::vector<std::vector<double>> xyz_temp;
+    for (int i = 0; i < num_particles; i++) {
+        double x = generate_random_double(0.0, 80.0);
+        double y = generate_random_double(0.0, 80.0);
+        double z = generate_random_double(0.0, 80.0);
+        xyz_temp.push_back({x, y, z});
+    }
 
-    // // Call GB_NBL_cube constructor with thrust::device_vector
-    // GB_NBL_GPU_cube lc_cube3(c_size, num_particles, cut_off_radius);
+    // 将 xyz_temp 中的坐标导入到 Dynamic2DArray<double> xyz 中
+    Dynamic2DArray<double> xyz(num_particles, 3);
+    for (int i = 0; i < num_particles; i++) {
+        for (int j = 0; j < 3; j++) {
+            xyz.push_back(i, xyz_temp[i][j]);
+        }
+    }
 
-    // // thrust::device_vector res = lc_cube3.get_neighbor_cells_gpu(1);
-    // // for(int i = 0; i < res.size(); i++) {
-    // //     std::cout << res[i] << " ";
-    // // }
+    std::cout << "Data Preparation Ready!" << std::endl;
 
-    // // Check the constructor
-    // std::vector<std::vector<double>> xyz_temp;
-    // for (int i = 0; i < num_particles; i++) {
-    //     double x = generate_random_double(0.0, 80.0);
-    //     double y = generate_random_double(0.0, 80.0);
-    //     double z = generate_random_double(0.0, 80.0);
-    //     xyz_temp.push_back({x, y, z});
-    // }
-
-    // // 将 xyz_temp 中的坐标导入到 Dynamic2DArray<double> xyz 中
-    // Dynamic2DArray<double> xyz(num_particles, 3);
-    // for (int i = 0; i < num_particles; i++) {
-    //     for (int j = 0; j < 3; j++) {
-    //         xyz.push_back(i, xyz_temp[i][j]);
-    //     }
-    // }
-
-    // std::cout << "Data Preparation Ready!" << std::endl;
-
-    // // 统计时间：开始
-    // auto start_time = std::chrono::high_resolution_clock::now();
-    // // 执行命令
-    // lc_cube3.constructor_gpu(xyz);
-    // // 统计时间：结束
-    // auto end_time = std::chrono::high_resolution_clock::now();
-    // std::chrono::duration<double> duration = end_time - start_time;
-    // // 输出执行时间（以秒为单位）
-    // std::cout << "执行时间：" << duration.count() << " 秒" << std::endl;
+    // 统计时间：开始
+    auto start_time = std::chrono::high_resolution_clock::now();
+    // 执行命令
+    lc_cube3.constructor_gpu(xyz);
+    // 统计时间：结束
+    auto end_time = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> duration = end_time - start_time;
+    // 输出执行时间（以秒为单位）
+    std::cout << "执行时间：" << duration.count() << " 秒" << std::endl;
 
 
 
 
-    // // 测试get_neighbors
-    // thrust::device_vector res_neighbor = lc_cube3.get_neighbors(0);
-    // for (int i = 0; i < res_neighbor.size(); i++){
-    //     std::cout << res_neighbor[i] << " ";
-    // }
-    // std::cout << std::endl;
+    // 测试get_neighbors
+    thrust::device_vector res_neighbor = lc_cube3.get_neighbors(0);
+    for (int i = 0; i < res_neighbor.size(); i++){
+        std::cout << res_neighbor[i] << " ";
+    }
+    std::cout << std::endl;
 
-    // std::cout << "Thrust version: " << THRUST_MAJOR_VERSION << "." << THRUST_MINOR_VERSION << std::endl;
+    std::cout << "Thrust version: " << THRUST_MAJOR_VERSION << "." << THRUST_MINOR_VERSION << std::endl;
 
 
     return 0;
