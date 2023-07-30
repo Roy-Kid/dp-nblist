@@ -12,9 +12,9 @@ __grid_based_nbl_cpp.so__: The compiled library of Unoptimized neighborlist for 
 
 __grid_based_nbl_mp.cpp__: Neighborlist implementation with basic OpenMP optimization for improved performance.
 
-__grid_based_nbl_mp.so__: The compiled library of OpenMP neighborlistfor python.
+__grid_based_nbl_mp.so__: The compiled library of OpenMP neighborlist for python.
 
-__validation.py__: A test file comparing the performance of the implemented neighbor list algorithms with ASAP3 on a dataset of size 50000.
+__validation.py__: A test file comparing the performance of the implemented neighborlist algorithms with ASAP3 on a dataset of size 50000.
 
 
 # How to Compile
