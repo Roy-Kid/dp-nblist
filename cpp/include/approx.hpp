@@ -1,5 +1,4 @@
-#ifndef MOLPACK_APPROX_H
-#define MOLPACK_APPROX_H
+#pragma once
 
 #include <cmath>
 #include <type_traits>
@@ -32,6 +31,4 @@ static bool approx_eq(const T& lhs, const U& rhs, double eps = 1e-12) {
    }
 }
 
-}  // namespace molpack
-
-#endif  // MOLPACK_APPROX_H
+}  // namespace dpnblist

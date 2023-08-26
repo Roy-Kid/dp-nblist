@@ -529,16 +529,19 @@ TEST_SUITE("vec3") {
     Vec3<double> v1(1.1, 2.2, 3.3);
     Vec3<int> v2(1, 2, 3);
 
-    CHECK(v1.norm() == doctest::Approx(4.1158231255));
-    CHECK(v2.norm() == doctest::Approx(3.7416573868));
+    CHECK(norm(v1) == doctest::Approx(4.1158231255));
+    CHECK(norm(v2) == doctest::Approx(3.7416573868));
   }
 
-  TEST_CASE("testing the vec3 function product") {
+  TEST_CASE("test floor") {
     Vec3<double> v1(1.1, 2.2, 3.3);
     Vec3<int> v2(1, 2, 3);
 
-    CHECK(v1.product() == doctest::Approx(7.986));
-    CHECK(v2.product() == 6);
+    CHECK(floor(v1) == v2);
+
+    Vec3<double> v3(-1.1, -2.2, -3.3);
+    Vec3<int> v4(-2, -3, -4);
+    CHECK(floor(v3) == v4);
   }
 }
 } // namespace dpnblist
