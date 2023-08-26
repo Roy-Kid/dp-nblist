@@ -5,11 +5,11 @@
 ## Roadmap
 
 * Cpp
-    [] linked-cell
+    [ ] linked-cell
 
 * Cuda
-    [] Octree
+    [ ] Octree
 
 * Python
-    [] Binding for Linked-cell 
-    [] Binding for Octree 
+    [ ] Binding for Linked-cell 
+    [ ] Binding for Octree 
