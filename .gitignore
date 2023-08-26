@@ -30,3 +30,13 @@
 *.exe
 *.out
 *.app
+
+# Build Directories
+build/
+bin/
+.cache/
+.vscode/
+
+# pytest tmp
+pytest_cache/
+__pycache__/
