@@ -161,7 +161,7 @@ namespace dpnblist
         {
             auto _inv_mat = get_inverse();
             Vec3<double> reci_vec = _inv_mat * position;
-            Vec3<double> wrapped_reci_vec = reci_vec - reci_vec.floor();
+            Vec3<double> wrapped_reci_vec = reci_vec - floor(reci_vec);
             return _matrix * wrapped_reci_vec;
         }
         else
@@ -172,7 +172,7 @@ namespace dpnblist
     {
         auto dr = r1 - r2;
         auto wrapped_dr = wrap(dr);
-        return wrapped_dr.norm();
+        return norm(wrapped_dr);
     }
 
     Vec3<double> Box::calc_vector(Vec3<double>& r1, Vec3<double>& r2)

@@ -9,4 +9,5 @@ target_include_directories(dpnblist PUBLIC
 )
 target_sources(dpnblist PRIVATE
     ref_celllist.cpp
+    box.cpp
 )
