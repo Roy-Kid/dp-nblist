@@ -18,6 +18,8 @@ private:
 public:
   Vec3<T>() = default;
   Vec3<T>(const T &x, const T &y, const T &z) : inner_{x, y, z} {}
+  template<typename U, typename = std::enable_if<std::is_arithmetic_v<U>>>
+  Vec3<T>(const Vec3<U>& vec) : inner_{static_cast<T>(vec[0]), static_cast<T>(vec[1]), static_cast<T>(vec[2])} {}
 
   inline const T &getX() const { return inner_[0]; }
   inline const T &getY() const { return inner_[1]; }
