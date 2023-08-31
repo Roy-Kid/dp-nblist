@@ -46,19 +46,20 @@ namespace dpnblist
 
     class NeighborList : public BaseNeighborList
     {
-        using NeighborListArray = std::vector<std::vector<size_t>>;
+        public:
+            using NeighborListArray = std::vector<std::vector<size_t>>;
 
-        NeighborList(Box* box, double r_cutoff);
+            NeighborList(Box* box, double r_cutoff);
 
-        ~NeighborList();
+            ~NeighborList();
 
-        void reset();
+            void reset();
 
-        void build(std::vector<Vec3<double>> &xyz);
+            void build(std::vector<Vec3<double>> &xyz);
 
-        void update(std::vector<Vec3<double>> &xyz);
+            void update(std::vector<Vec3<double>> &xyz);
 
-        NeighborListArray get_listArray();
+            NeighborListArray get_listArray();
 
         private:
             double _r_cutoff;
