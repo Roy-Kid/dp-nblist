@@ -58,6 +58,8 @@ namespace dpnblist
 
         void update(std::vector<Vec3<double>> &xyz);
 
+        NeighborListArray get_listArray();
+
         private:
             double _r_cutoff;
             CellList _cell_list;
