@@ -32,7 +32,7 @@ void CellList::build(std::vector<Vec3<double>> &xyz)
 
     reset();
 
-    update(std::vector<Vec3<double>> & xyz);
+    update(xyz);
 }
 
 void CellList::update(std::vector<Vec3<double>> &xyz)
