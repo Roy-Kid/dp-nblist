@@ -30,15 +30,16 @@ Vec3<int> CellList::get_cell_vector(size_t cell_index) const
 void CellList::build(std::vector<Vec3<double>> &xyz)
 {
 
-    void reset();
+    reset();
 
-    void update(std::vector<Vec3<double>> & xyz);
+    update(std::vector<Vec3<double>> & xyz);
 }
 
 void CellList::update(std::vector<Vec3<double>> &xyz)
 {
     size_t n_atoms = xyz.size();
     _natoms += n_atoms;
+    _lscl.resize(_natoms, EMPTY);
     Vec3<int> xyz_cell_index;
     xyz = _box->wrap(xyz);
     for (size_t i = 0; i < n_atoms; i++)
@@ -78,41 +79,45 @@ std::vector<size_t> CellList::get_neighbors(size_t cell_index) const
 {
     std::vector<size_t> neighbors;
     Vec3<int> cell_vector = get_cell_vector(cell_index);
-    for (size_t x = cell_vector[0] - 1; x <= cell_vector[0] + 1; x++)
+    int x1, y1, z1;
+    for (int x = cell_vector[0] - 1; x <= cell_vector[0] + 1; x++)
     {
-        for (size_t y = cell_vector[1] - 1; y <= cell_vector[1] + 1; y++)
+        for (int y = cell_vector[1] - 1; y <= cell_vector[1] + 1; y++)
         {
-            for (size_t z = cell_vector[2] - 1; z <= cell_vector[2] + 1; z++)
+            for (int z = cell_vector[2] - 1; z <= cell_vector[2] + 1; z++)
             {
+                x1 = x;
+                y1 = y;
+                z1 = z;
                 // periodic
                 if (x < 0)
                 {
-                    x += _cell_length[0];
+                    x1 = x + _cell_length[0];
                 }
                 else if (x >= _cell_length[0])
                 {
-                    x -= _cell_length[0];
+                    x1 = x - _cell_length[0];
                 }
 
                 if (y < 0)
                 {
-                    y += _cell_length[1];
+                    y1 = y + _cell_length[1];
                 }
                 else if (y >= _cell_length[1])
                 {
-                    y -= _cell_length[1];
+                    y1 = y - _cell_length[1];
                 }
 
                 if (z < 0)
                 {
-                    z += _cell_length[2];
+                    z1 = z + _cell_length[2];
                 }
                 else if (z >= _cell_length[2])
                 {
-                    z -= _cell_length[2];
+                    z1 = z - _cell_length[2];
                 }
 
-                Vec3<int> neighbor_cell_vector = {x, y, z};
+                Vec3<int> neighbor_cell_vector = {x1, y1, z1};
                 size_t neighbor_cell_index = get_cell_index(neighbor_cell_vector);
                 if (neighbor_cell_index != cell_index)
                 {
