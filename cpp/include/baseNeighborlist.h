@@ -11,7 +11,7 @@ class BaseNeighborList
     }
     ~BaseNeighborList()
     {
-        delete _box;
+        // delete _box;
     }
 
     void set_lengths_and_angles(Vec3<double> lengths, Vec3<double> angles)
