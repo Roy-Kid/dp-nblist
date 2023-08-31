@@ -183,4 +183,9 @@ void NeighborList::update(std::vector<Vec3<double>> &xyz)
     }
 }
 
+NeighborListArray NeighborList::get_listArray()
+{
+    return _neighborListArray;
+}
+
 } // namespace dpnblist
