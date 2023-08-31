@@ -1,6 +1,9 @@
 #include <chemfiles.hpp>
-
 #include "refCellList.h"
+#include "doctest/doctest.h"
+#include <fstream>
+#include <string>
+#include <sstream>
 
 namespace dpnblist {
 
