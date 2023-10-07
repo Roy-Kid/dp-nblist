@@ -8,6 +8,6 @@ target_include_directories(dpnblist PUBLIC
     ${CMAKE_SOURCE_DIR}/include
 )
 target_sources(dpnblist PRIVATE
-    ref_celllist.cpp
+    refCellList.cpp
     box.cpp
 )
