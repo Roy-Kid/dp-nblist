@@ -1,0 +1,72 @@
+site_name: dp-nblist lib
+repo_name: dp-nblist
+repo_url: https://github.com/Roy-Kid/dp-nblist
+
+theme:
+  name: material
+  language: en
+  palette:
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      primary: green
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      primary: green
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.top
+    - navigation.tabs
+    - navigation.prune
+    - navigation.footer
+    - navigation.indexes
+    - navigation.expand
+    - toc.follow
+    - toc.integrate
+    - content.action.edit
+
+  icon:
+    repo: fontawesome/brands/github
+    edit: material/pencil 
+    view: material/eye
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/Roy-Kid/dp-nblist
+
+extra_css:
+  - docs/stylesheets/extra.css
+
+plugins:
+  - search
+  - git-authors
+  - git-revision-date-localized
+  - mkdocs-jupyter
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - def_list
+  - footnotes
+  - tables
+  - pymdownx.details
+  - pymdownx.superfences
+  - toc:
+      permalink: true
+      title: On this page
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+
+copyright: Copyright &copy; 2019-2023 Deep modeling
