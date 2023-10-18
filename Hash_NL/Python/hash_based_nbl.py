@@ -29,16 +29,20 @@ class HB_NBL_cube:
               默认为1.
         """
         self.cube_size = np.array(cube_size)  # 立方体的大小
+
         self.rc = cut_off_radius  # 截断半径
+
         self.num_particles = num_particles
+
         # 表示颗粒的邻接关系
         self.particle_list = [[] for _ in range(num_particles)]
+
         # 哈希表: hashed_value : particle_seq，使用defaultdict构建
         self.hash_table = defaultdict(list)
+        
         self.hash_list = [[] for _ in range(num_particles)]
-        self.coefficient = coefficient
-        self.range_size = range_size
-        self.move_size = move_size
+
+        self.range_size = 50# 50 - rc = 2
 
 
     def _cal_hash_code(self, inputs):
@@ -47,10 +51,17 @@ class HB_NBL_cube:
         参数:
             - inputs: 颗粒的坐标数据，一个大小为(num_particles, 3)的 NumPy array
         """
-        # def add_to_hash_table(hash_range, index):
-        #     if not self.hash_table[hash_range]:
-        #         self.hash_table[hash_range] = []
-        #     self.hash_table[hash_range].append(index)
+        def add_to_hash_table(input_temp, index):
+            hash_code = hash_function_float(input_temp)
+            hash_range_temp = hash_code // self.range_size * self.range_size
+
+            if not self.hash_table[hash_range_temp]:
+                self.hash_table[hash_range_temp] = []
+            self.hash_table[hash_range_temp].append(index)   
+
+            return hash_range_temp  # 返回集合
+
+
 
         # 构建邻接关系字典
 
@@ -67,34 +78,35 @@ class HB_NBL_cube:
         #     print(hash_range * self.range_size)
         #     print("___________")
 
-        def add_to_hash_table(input_temp, index):
-            x, y, z = input_temp
-            input_list = [[x + 1, y, z],
-                        [x - 1, y, z],
-                        [x, y + 1, z],
-                        [x, y - 1, z],
-                        [x, y, z + 1],
-                        [x, y, z - 1]]
-            hash_range_set = set()  # 使用集合来存储唯一的哈希范围值
+        # def add_to_hash_table(input_temp, index):
+        #     x, y, z = input_temp
+        #     input_list = [[x + self.move_size, y, z],
+        #                 [x - self.move_size, y, z],
+        #                 [x, y + self.move_size, z],
+        #                 [x, y - self.move_size, z],
+        #                 [x, y, z + self.move_size],
+        #                 [x, y, z - self.move_size]]
+        #     # input_list = [[x, y, z]]
+        #     hash_range_set = set()  # 使用集合来存储唯一的哈希范围值
 
-            for value in input_list:
-                hash_code = hash_function_float(value)
-                hash_range_temp = hash_code // self.range_size
-                hash_range_set.add(hash_range_temp * self.range_size)  # 使用add()方法来添加唯一值
+        #     for value in input_list:
+        #         hash_code = hash_function_float(value)
+        #         hash_range_temp = hash_code // self.range_size
+        #         hash_range_set.add(hash_range_temp * self.range_size)  # 使用add()方法来添加唯一值
 
-
-            for hash_value in hash_range_set:  
-                if not self.hash_table[hash_value]:
-                    self.hash_table[hash_value] = []
-                self.hash_table[hash_value].append(index)   
-            return hash_range_set  # 返回集合
+        #     for hash_value in hash_range_set:  
+        #         if not self.hash_table[hash_value]:
+        #             self.hash_table[hash_value] = []
+        #         self.hash_table[hash_value].append(index)   
+        #     return hash_range_set  # 返回集合
 
 
         # # 周期边界
         for i in range(self.num_particles):
             hash_list_temp = []
             hash_temp = add_to_hash_table(inputs[i], i)
-            hash_list_temp.extend(hash_temp)
+            # print(hash_temp)
+            hash_list_temp.append(hash_temp)
             
             if any(np.less(inputs[i], self.rc)) or any(np.greater(inputs[i], self.cube_size - self.rc)):
                 # 颗粒靠近边界，需要构建镜像
@@ -105,20 +117,61 @@ class HB_NBL_cube:
                         mirrored_position = inputs[i].copy()
                         mirrored_position[axis] += self.cube_size[axis]
                         hash_temp = add_to_hash_table(mirrored_position, i)
-                        hash_list_temp.extend(hash_temp)
+                        hash_list_temp.append(hash_temp)
 
+                        # hash_code = hash_function_float(mirrored_position)
+                        # hash_range = hash_code // self.range_size
+                        # add_to_hash_table(hash_range * self.range_size, i)
+                        # hash_list_temp.append(hash_range * self.range_size)
 
                     if inputs[i, axis] > self.cube_size[axis] - self.rc:
                         mirrored_position = inputs[i].copy()
                         mirrored_position[axis] += self.rc
                         mirrored_position[axis] -= self.cube_size[axis]
                         hash_temp = add_to_hash_table(mirrored_position, i)
-                        hash_list_temp.extend(hash_temp)
+                        hash_list_temp.append(hash_temp)
 
             # print(hash_list_temp)
-            self.hash_list[i] = hash_list_temp
+            self.hash_list[i] = set(hash_list_temp)
+            # print(hash_list_temp)
 
 
+
+
+    # # 计算所有hash values
+    # def _cal_hashed_values(self, input_v):
+    #     res = []
+    #     # # 周期边界
+    #     hash_code = hash_function_float(input_v, self.coefficient)
+    #     hash_range = hash_code // self.range_size
+
+    #     res.append(hash_range * self.range_size)
+
+    #     if any(np.less(input_v, self.rc)) or any(np.greater(input_v, self.cube_size - self.rc)):
+    #         # 颗粒靠近边界，需要构建镜像
+
+    #         # 构建并添加周期边界镜像
+    #         for axis in range(3):
+    #             if input_v[axis] < self.rc:
+    #                 mirrored_position = input_v.copy()
+    #                 mirrored_position[axis] += self.cube_size[axis]
+    #                 hash_code = hash_function_float(mirrored_position, self.coefficient)
+    #                 hash_range = hash_code // self.range_size
+    #                 res.append(hash_range * self.range_size)
+    #                 print(mirrored_position)
+
+    #             if input_v[axis] > self.cube_size[axis] - self.rc:
+    #                 mirrored_position = input_v.copy()
+    #                 # mirrored_position[axis] -= self.cube_size[axis]
+    #                 mirrored_position[axis] += self.rc
+    #                 mirrored_position[axis] -= self.cube_size[axis]
+
+    #                 hash_code = hash_function_float(mirrored_position, self.coefficient)
+    #                 hash_range = hash_code // self.range_size
+    #                 res.append(hash_range * self.range_size)
+    #                 print(mirrored_position)
+
+    #     return res
 
 
     def _get_min_diff(self, xyz1, xyz2):
@@ -155,7 +208,19 @@ class HB_NBL_cube:
             particle_hash_values = self.hash_list[particle_seq]
 
             for particle_hash_value in particle_hash_values:
-                neighbor_particles = self.hash_table[particle_hash_value]
+                # # particle_hash_range = particle_hash_value // self.range_size
+                neighbor_particles = set()
+                neighbor_particles.update(self.hash_table[particle_hash_value])
+                neighbor_particles.update(self.hash_table[particle_hash_value + self.range_size])
+                neighbor_particles.update(self.hash_table[particle_hash_value - self.range_size])
+
+                # neighbor_particles.update(self.hash_table[particle_hash_range * self.range_size])
+                # neighbor_particles.update(self.hash_table[(particle_hash_range + 1) * self.range_size])
+                # neighbor_particles.update(self.hash_table[(particle_hash_range - 1) * self.range_size])
+                # neighbor_particles.update(self.hash_table[(particle_hash_range + 2) * self.range_size])
+                # neighbor_particles.update(self.hash_table[(particle_hash_range - 2) * self.range_size])
+
+                # neighbor_particles = self.hash_table[particle_hash_value]
 
 
                 for neighbor_particle_seq in neighbor_particles:

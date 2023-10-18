@@ -103,5 +103,10 @@ def custom_hash(point, max_bits=32):
     return result
 
 
+def hash_zhao(point):
+    c1, c2, c3 = 1, 2**3, 4**3
+    x, y, z = point
+
+    return c1 * x + c2 * y + c3 * z
 
 
