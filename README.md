@@ -4,12 +4,17 @@
 
 ## Roadmap
 
-* Cpp
-    [] linked-cell
+* Grid_NL
+    [] Python implementation
+    [] Cpp implementation
+    [] Cuda implementation
 
-* Cuda
-    [] Octree
+* Octree_NL
+    [] Python implementation
+    [] Cpp implementation
+    [] Cuda implementation
 
-* Python
-    [] Binding for Linked-cell 
-    [] Binding for Octree 
+* Hahs_NL
+    [] Python implementation
+    [] Cpp implementation
+    [] Cuda implementation
