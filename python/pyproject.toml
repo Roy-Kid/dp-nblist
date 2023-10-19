@@ -1,0 +1,14 @@
+[project]
+name = "modern_python_template"
+version = "0.0.1"
+dependencies = ["numpy"]
+
+[build-system]
+requires = [
+    "setuptools",
+    "setuptools_scm[toml]",
+    "pybind11",
+    "cmake-build-extension",
+    "numpy"
+]
+build-backend = "setuptools.build_meta"
