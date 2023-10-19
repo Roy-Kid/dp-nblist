@@ -131,7 +131,7 @@ std::vector<size_t> CellList::get_neighbors(size_t cell_index) const
 }
 
 NeighborList::NeighborList(Box *box, double r_cutoff)
-    : BaseNeighborList(box), _r_cutoff(r_cutoff), _cell_list(box, r_cutoff)
+    : BaseNBL(box), _r_cutoff(r_cutoff), _cell_list(box, r_cutoff)
 {
 }
 

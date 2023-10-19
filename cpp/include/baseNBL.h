@@ -3,13 +3,13 @@
 namespace dpnblist
 {
 
-class BaseNeighborList
+class BaseNBL
 {
   public:
-    BaseNeighborList(Box *box) : _box(box)
+    BaseNBL(Box *box) : _box(box)
     {
     }
-    ~BaseNeighborList()
+    ~BaseNBL()
     {
         // delete _box;
     }

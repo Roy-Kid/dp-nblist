@@ -6,7 +6,7 @@
 
 #include "vec3.hpp"
 #include "box.h"
-#include "baseNeighborlist.h"
+#include "baseNBL.h"
 
 namespace dpnblist
 {
@@ -44,7 +44,7 @@ namespace dpnblist
         const size_t EMPTY = std::numeric_limits<size_t>::max();
     };
 
-    class NeighborList : public BaseNeighborList
+    class NeighborList : public BaseNBL
     {
         public:
             using NeighborListArray = std::vector<std::vector<size_t>>;
