@@ -170,9 +170,16 @@ namespace dpnblist
 
     double Box::calc_distance(Vec3<double>& r1, Vec3<double>& r2)
     {
-        auto dr = r1 - r2;
-        auto wrapped_dr = wrap(dr);
-        return norm(wrapped_dr);
+        Vec3<double> difference(0,0,0);
+        double diff = 0;
+        auto wrapped_dr = wrap(r1) - wrap(r2);
+        for (int i = 0; i < 3; i++){
+            diff = std::fmod(wrapped_dr[i] + _matrix[i][i] / 2, _matrix[i][i]);
+            if (diff < 0) diff += _matrix[i][i];
+            diff -= _matrix[i][i] / 2;
+            difference[i] = diff;
+        }
+        return norm(difference);
     }
 
     Vec3<double> Box::calc_vector(Vec3<double>& r1, Vec3<double>& r2)
