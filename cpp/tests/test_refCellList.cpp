@@ -11,7 +11,7 @@ namespace dpnblist {
     {
 
         TEST_CASE("NeighborList"){
-            Box box({80.1, 80.05, 80.13});
+            Box box({80.072, 80.016, 80.033});
             NeighborList nblist(&box, 2.6);
             std::vector<Vec3<double>> xyz;
             xyz.resize(50000);
@@ -50,9 +50,11 @@ namespace dpnblist {
             // Open a file for writing
             std::ofstream outFile("output.txt");
             if (outFile.is_open()) {
+                int index = 0;
                 for (const auto& row : listArray) {
+                    outFile << ++index << '\t';
                     for (size_t num : row) {
-                        outFile << num << '\t';
+                        outFile << num+1 << '\t';
                     }
                     outFile << '\n';
                 }
@@ -64,7 +66,7 @@ namespace dpnblist {
             }
 
             std::vector<std::vector<size_t>> ref_listArray(50000);
-            std::ifstream file2("out_nbl.txt");
+            std::ifstream file2("out_lmp_full.txt");
             if (!file2.is_open()) {
                 std::cout << "无法打开文件." << std::endl;
             }
