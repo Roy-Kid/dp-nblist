@@ -93,6 +93,8 @@ std::vector<size_t> CellList::get_neighbors(size_t cell_index) const
                 y_neb = y;
                 z_neb = z;
                 // periodic
+                // TODO: rewrite here
+                // ref: https://scicomp.stackexchange.com/questions/20165/periodic-boundary-conditions-for-triclinic-box
                 if (x < 0)
                 {
                     x_neb = x + _cell_length[0];
