@@ -6,7 +6,7 @@ namespace dpnblist
 CellList::CellList(Box *box, double r_cutoff) : _box(box), _r_cutoff(r_cutoff)
 {
     auto cell_length = box->get_lengths();
-    _cell_length = cell_length / r_cutoff;
+    _cell_length = Vec3<int>(cell_length / r_cutoff);
 }
 
 size_t CellList::get_cell_index(Vec3<int> &cell_vector) const
@@ -29,9 +29,7 @@ Vec3<int> CellList::get_cell_vector(size_t cell_index) const
 
 void CellList::build(std::vector<Vec3<double>> &xyz)
 {
-
     reset();
-
     update(xyz);
 }
 
@@ -42,9 +40,14 @@ void CellList::update(std::vector<Vec3<double>> &xyz)
     _lscl.resize(_natoms, EMPTY);
     Vec3<int> xyz_cell_index;
     xyz = _box->wrap(xyz);
+    
     for (size_t i = 0; i < n_atoms; i++)
     {
         xyz_cell_index = Vec3<int>(xyz[i] / _r_cutoff);
+        for (int j = 0; j < 3; j++){
+            if (xyz_cell_index[j] == _cell_length[j])
+                xyz_cell_index[j] = xyz_cell_index[j] - 1;
+        }
         size_t cell_index = get_cell_index(xyz_cell_index);
         _lscl[i] = _head[cell_index];
         _head[cell_index] = i;
@@ -79,45 +82,45 @@ std::vector<size_t> CellList::get_neighbors(size_t cell_index) const
 {
     std::vector<size_t> neighbors;
     Vec3<int> cell_vector = get_cell_vector(cell_index);
-    int x1, y1, z1;
+    int x_neb, y_neb, z_neb;
     for (int x = cell_vector[0] - 1; x <= cell_vector[0] + 1; x++)
     {
         for (int y = cell_vector[1] - 1; y <= cell_vector[1] + 1; y++)
         {
             for (int z = cell_vector[2] - 1; z <= cell_vector[2] + 1; z++)
             {
-                x1 = x;
-                y1 = y;
-                z1 = z;
+                x_neb = x;
+                y_neb = y;
+                z_neb = z;
                 // periodic
                 if (x < 0)
                 {
-                    x1 = x + _cell_length[0];
+                    x_neb = x + _cell_length[0];
                 }
                 else if (x >= _cell_length[0])
                 {
-                    x1 = x - _cell_length[0];
+                    x_neb = x - _cell_length[0];
                 }
 
                 if (y < 0)
                 {
-                    y1 = y + _cell_length[1];
+                    y_neb = y + _cell_length[1];
                 }
                 else if (y >= _cell_length[1])
                 {
-                    y1 = y - _cell_length[1];
+                    y_neb = y - _cell_length[1];
                 }
 
                 if (z < 0)
                 {
-                    z1 = z + _cell_length[2];
+                    z_neb = z + _cell_length[2];
                 }
                 else if (z >= _cell_length[2])
                 {
-                    z1 = z - _cell_length[2];
+                    z_neb = z - _cell_length[2];
                 }
 
-                Vec3<int> neighbor_cell_vector = {x1, y1, z1};
+                Vec3<int> neighbor_cell_vector = {x_neb, y_neb, z_neb};
                 size_t neighbor_cell_index = get_cell_index(neighbor_cell_vector);
                 if (neighbor_cell_index != cell_index)
                 {
@@ -126,7 +129,7 @@ std::vector<size_t> CellList::get_neighbors(size_t cell_index) const
             }
         }
     }
-
+    neighbors.push_back(cell_index);
     return neighbors;
 }
 

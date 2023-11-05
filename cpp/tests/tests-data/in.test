@@ -1,0 +1,10 @@
+# Simulation parameters
+newton off
+neighbor 0 bin
+
+# Read the model
+read_data 50000.lmp
+
+# Set the potential function
+pair_style zero 2.6 full
+pair_coeff * *
