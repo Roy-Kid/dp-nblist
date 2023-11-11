@@ -1,4 +1,6 @@
 #include "refCellList.h"
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 namespace dpnblist
 {
@@ -167,3 +169,18 @@ std::vector<std::vector<size_t>> NeighborList::get_listArray()
 }
 
 } // namespace dpnblist
+
+namespace py = pybind11;
+PYBIND11_MODULE(dpnblist, m) {
+    py::class_<dpnblist::Vec3<double>>(m, "Vec3")
+        .def(py::init<const double &, const double &, const double &>());
+    
+    py::class_<dpnblist::Box>(m, "Box")
+        .def(py::init<dpnblist::Vec3<double>, dpnblist::Vec3<double>>(), py::arg("lengths"), py::arg("angles") = dpnblist::Vec3<double>(90, 90, 90));
+    
+    py::class_<dpnblist::NeighborList>(m, "NeighborList")
+        .def(py::init<dpnblist::Box*, double>())
+        .def("build", &dpnblist::NeighborList::build)
+        .def("update", &dpnblist::NeighborList::update)
+        .def("get_listArray", &dpnblist::NeighborList::get_listArray);
+}
