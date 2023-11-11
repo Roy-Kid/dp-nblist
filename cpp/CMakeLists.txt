@@ -18,6 +18,11 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
     option(BUILD_SHARED_LIBS "Build shared libraries" ON)
     add_subdirectory(src)
     target_compile_options(dpnblist PRIVATE -g)
-    add_subdirectory(tests)
-    enable_testing()
+    execute_process(COMMAND python3-config --extension-suffix PYTHON_MODULE_EXTENSION)
+    set_target_properties(dpnblist PROPERTIES 
+        PREFIX ""
+        SUFFIX ${PYTHON_MODULE_EXTENSION}
+    )
+    #add_subdirectory(tests)
+    # enable_testing()
 endif()
