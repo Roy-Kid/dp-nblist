@@ -1,4 +1,6 @@
 #include "refCellList.h"
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 namespace dpnblist
 {
@@ -80,56 +82,29 @@ std::vector<size_t> CellList::get_atoms_in_cell(size_t cell_index) const
 
 std::vector<size_t> CellList::get_neighbors(size_t cell_index) const
 {
+    // the cell is described by the vector, the cell_vector is the vector of the central cell, the matrix is the offset vector, the (matrix + cell_vector) is the 26 neighbors cell vector.
+    // the vector can be express as r = f * A, A is the box matrix, f is the fractional coordinate, can be express as f = inv_A * r
+    // if periodic boundary condition is considered, wrapped_f = f - floor(f), wrapped_f is the wrapped fractional coordinate, so t = A * wrapped_f, t is the wrapped vector
+
     std::vector<size_t> neighbors;
     Vec3<int> cell_vector = get_cell_vector(cell_index);
-    int x_neb, y_neb, z_neb;
-    for (int x = cell_vector[0] - 1; x <= cell_vector[0] + 1; x++)
-    {
-        for (int y = cell_vector[1] - 1; y <= cell_vector[1] + 1; y++)
-        {
-            for (int z = cell_vector[2] - 1; z <= cell_vector[2] + 1; z++)
-            {
-                x_neb = x;
-                y_neb = y;
-                z_neb = z;
-                // periodic
-                // TODO: rewrite here
-                // ref: https://scicomp.stackexchange.com/questions/20165/periodic-boundary-conditions-for-triclinic-box
-                if (x < 0)
-                {
-                    x_neb = x + _cell_length[0];
-                }
-                else if (x >= _cell_length[0])
-                {
-                    x_neb = x - _cell_length[0];
-                }
-
-                if (y < 0)
-                {
-                    y_neb = y + _cell_length[1];
-                }
-                else if (y >= _cell_length[1])
-                {
-                    y_neb = y - _cell_length[1];
-                }
-
-                if (z < 0)
-                {
-                    z_neb = z + _cell_length[2];
-                }
-                else if (z >= _cell_length[2])
-                {
-                    z_neb = z - _cell_length[2];
-                }
-
-                Vec3<int> neighbor_cell_vector = {x_neb, y_neb, z_neb};
-                size_t neighbor_cell_index = get_cell_index(neighbor_cell_vector);
-                if (neighbor_cell_index != cell_index)
-                {
-                    neighbors.push_back(neighbor_cell_index);
-                }
-            }
-        }
+    // define a offset matrix 26*3
+    std::vector<Vec3<int>> matrix = {
+        {-1, -1, -1},{-1, -1, 0},{-1, -1, 1},{-1, 0, -1},{-1, 0, 0},{-1, 0, 1},{-1, 1, -1},{-1, 1, 0},{-1, 1, 1},
+        {0, -1, -1},{0, -1, 0},{0, -1, 1},{0, 0, -1},{0, 0, 1},{0, 1, -1},{0, 1, 0},{0, 1, 1},
+        {1, -1, -1},{1, -1, 0},{1, -1, 1},{1, 0, -1},{1, 0, 0},{1, 0, 1},{1, 1, -1},{1, 1, 0},{1, 1, 1} 
+    };
+    Mat3<double> A = {_cell_length[0], 0, 0, 0, _cell_length[1], 0, 0, 0, _cell_length[2]};
+    Mat3<double> inv_A = A.invert();
+    Vec3<double> f;
+    Vec3<double> wrapped_f;
+    Vec3<int> warp_neb_vector;
+    for (int i = 0; i < 26; i++){
+        Vec3<int> neb_vector = cell_vector + matrix[i];
+        f = inv_A * neb_vector;
+        wrapped_f = f - floor(f);
+        warp_neb_vector = A * wrapped_f;
+        neighbors.push_back(get_cell_index(warp_neb_vector));
     }
     neighbors.push_back(cell_index);
     return neighbors;
@@ -194,3 +169,18 @@ std::vector<std::vector<size_t>> NeighborList::get_listArray()
 }
 
 } // namespace dpnblist
+
+namespace py = pybind11;
+PYBIND11_MODULE(dpnblist, m) {
+    py::class_<dpnblist::Vec3<double>>(m, "Vec3")
+        .def(py::init<const double &, const double &, const double &>());
+    
+    py::class_<dpnblist::Box>(m, "Box")
+        .def(py::init<dpnblist::Vec3<double>, dpnblist::Vec3<double>>(), py::arg("lengths"), py::arg("angles") = dpnblist::Vec3<double>(90, 90, 90));
+    
+    py::class_<dpnblist::NeighborList>(m, "NeighborList")
+        .def(py::init<dpnblist::Box*, double>())
+        .def("build", &dpnblist::NeighborList::build)
+        .def("update", &dpnblist::NeighborList::update)
+        .def("get_listArray", &dpnblist::NeighborList::get_listArray);
+}
