@@ -1,13 +1,37 @@
 import torch
 import torch.nn as nn
 
-class TorchBaseNBL(nn.Module):
+class Box:
+    def __init__(self, lengths, angles = torch.tensor([90,90,90])):
+        a = lengths[0]
+        b = lengths[1]
+        c = lengths[2]
 
-    def forward(
-        self,
-        positions
-    ):
-        return self.update(positions)
+        alpha = angles[0]
+        beta = angles[1]
+        gamma = angles[2]
+
+        lx = a
+        xy = b * torch.cos(torch.deg2rad(gamma))
+        xz = c * torch.cos(torch.deg2rad(beta))
+        ly = torch.sqrt(b * b - xy * xy)
+        yz = (b * c * torch.cos(torch.deg2rad(alpha)) - xy * xz) / ly
+        lz = torch.sqrt(c * c - xz * xz - yz * yz)
+
+        # Assuming you have a 3x3 matrix
+        self._matrix = torch.zeros((3, 3), dtype=torch.float32)
+        self._matrix[0, 0] = lx
+        self._matrix[0, 1] = xy
+        self._matrix[0, 2] = xz
+        self._matrix[1, 0] = 0
+        self._matrix[1, 1] = ly
+        self._matrix[1, 2] = yz
+        self._matrix[2, 0] = 0
+        self._matrix[2, 1] = 0
+        self._matrix[2, 2] = lz
+
+
+class TorchBaseNBL(nn.Module):
     
     def update(self, positions):
         pass
@@ -32,13 +56,21 @@ class TorchNeighborList(TorchBaseNBL):
     References:
         https://github.com/aiqm/torchani/blob/master/torchani/aev.py
     """
-    def build(self, positions, box, cutoff, pbc):
+    def __init__(self, box, cutoff, pbc = torch.tensor([True, True, True])):
+        self.box = box._matrix
+        self.cutoff = cutoff
+        self.pbc = pbc
+
+    def build(self, positions):
         # Check if shifts are needed for periodic boundary conditions
-        if torch.all(pbc == 0):
-            shifts = torch.zeros(0, 3, device=box.device, dtype=torch.long)
+        if torch.all(self.pbc == 0):
+            self.shifts = torch.zeros(0, 3, device=self.box.device, dtype=torch.long)
         else:
-            shifts = self._get_shifts(box, pbc, cutoff)
-        idx_i, idx_j, offset = self._get_neighbor_pairs(positions, box, shifts, cutoff)
+            self.shifts = self._get_shifts(self.box, self.pbc, self.cutoff)
+        self.update(positions)
+    
+    def update(self, positions):
+        idx_i, idx_j, offset = self._get_neighbor_pairs(positions)
 
         # Create bidirectional id arrays, similar to what the ASE neighbor_list returns
         bi_idx_i = torch.cat((idx_i, idx_j), dim=0)
@@ -51,11 +83,11 @@ class TorchNeighborList(TorchBaseNBL):
 
         bi_offset = torch.cat((-offset, offset), dim=0)
         offset = bi_offset[sorted_idx]
-        offset = torch.mm(offset.to(box.dtype), box)
+        offset = torch.mm(offset.to(self.box.dtype), self.box)
 
         return idx_i, idx_j, offset
 
-    def _get_neighbor_pairs(self, positions, box, shifts, cutoff):
+    def _get_neighbor_pairs(self, positions):
         """Compute pairs of atoms that are neighbors
         Copyright 2018- Xiang Gao and other ANI developers
         (https://github.com/aiqm/torchani/blob/master/torchani/aev.py)
@@ -66,8 +98,10 @@ class TorchNeighborList(TorchBaseNBL):
                 defining unit box: tensor([[x1, y1, z1], [x2, y2, z2], [x3, y3, z3]])
             shifts (:class:`torch.Tensor`): tensor of shape (?, 3) storing shifts
         """
+        shifts = self.shifts
+        cutoff = self.cutoff
         num_atoms = positions.shape[0]
-        all_atoms = torch.arange(num_atoms, device=box.device)
+        all_atoms = torch.arange(num_atoms, device=self.box.device)
 
         # 1 Central box
         pi_center, pj_center = torch.combinations(all_atoms).unbind(-1)
@@ -76,7 +110,7 @@ class TorchNeighborList(TorchBaseNBL):
         # 2 boxs with shifts
         # shape convention (shift index, molecule index, atom index, 3)
         num_shifts = shifts.shape[0]
-        all_shifts = torch.arange(num_shifts, device=box.device)
+        all_shifts = torch.arange(num_shifts, device=self.box.device)
         shift_index, pi, pj = torch.cartesian_prod(
             all_shifts, all_atoms, all_atoms
         ).unbind(-1)
@@ -88,7 +122,7 @@ class TorchNeighborList(TorchBaseNBL):
         pj_all = torch.cat([pj_center, pj])
 
         # 4 Compute shifts and distance vectors
-        shift_values = torch.mm(shifts_all.to(box.dtype), box)
+        shift_values = torch.mm(shifts_all.to(self.box.dtype), self.box)
         Rij_all = positions[pi_all] - positions[pj_all] + shift_values
 
         # 5 Compute distances, and find all pairs within cutoff
@@ -148,3 +182,19 @@ class TorchNeighborList(TorchBaseNBL):
                 torch.cartesian_prod(o, o, r3),
             ]
         )
+
+
+if __name__ == "__main__":
+    lines = open('50000.pdb',encoding='utf-8').readlines()
+    # lines = open('s_25_n_7812.pdb',encoding='utf-8').readlines()
+    xyz = []
+    for i in range(5,len(lines)-1):#len(lines)-1
+        linesp = lines[i].split()
+        linesp.reverse()
+        xyz.append([float(linesp[4]),float(linesp[3]),float(linesp[2])])
+
+    length = torch.tensor([80.072, 80.016, 80.033])
+    box = Box(length)
+    cutoff = 2.6
+    torchnbl = TorchNeighborList(box, cutoff)
+    torchnbl.build(torch.tensor(xyz))
